@@ -1,0 +1,29 @@
+title LEGACY: ES/DPlay Bundle Voucher Interaction Sequence
+actor "Voucher\nRequester" as Vrq
+participant "BAM\nTech" as Bam
+actor DevOps
+boundary "Subscription\nTable" as Subs
+control "Subscription\nAPI" as SubsApi
+control Fusion
+boundary "Dplay\nWeb" as Dweb
+boundary "Eurosport\nWeb" as EWeb
+actor "End\nUser" as User
+Vrq ->Bam: voucherCodes()
+Bam ->DevOps: voucherCodes(csv)
+DevOps ->Subs: voucherCodes(csv)
+abox over Subs: Bridges BAMTech\n& Fusion
+User->Dweb: subscribeBundle(sku)
+ref over Fusion,Dweb: UX: Payment\nUX: Registration
+Fusion ->Dweb: confirmSubscription()
+Fusion->SubsApi: getVoucherCode(sku)
+ref over SubsApi: Interactions:\nFusion & Gigya?
+SubsApi->Subs: getVoucherCode(sku)
+Subs -->SubsApi: 
+linear
+SubsApi-->Fusion: 
+Fusion-->Dweb: 
+Dweb-->User: voucherCode(voucherId)
+linear off
+linear
+User ->EWeb: 
+EWeb -> Bam: matchVoucher(voucherId)
